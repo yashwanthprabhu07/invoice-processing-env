@@ -6,50 +6,59 @@ VENDORS = [
     "Redline Partners", "Vortex Supplies", "Caspian Works", "Nimbus Traders",
 ]
 
-AMOUNTS = [
-    "15000", "19500", "11000", "50000", "12800",
-    "23000", "8500", "31000", "44000", "17500",
-]
-
 MONTHS = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ]
 
-FRAUD_SIGNALS = [
-    "NOTE: Duplicate of a previous invoice — resubmitted for processing",
-    "Bank: Different account than registered",
-    "Discrepancy note: Rate revised without approval",
-    "Warning: Vendor name does not match registered records",
-    "Payment urgently requested within 24 hours",
-    "Note: Third invoice this month for same items",
-    "Amount billed is 4x the approved quote",
-    "No supporting documents attached",
-    "Previous invoices already paid — resubmission flagged",
-    "Urgent: Account details changed — update before payment",
+SERVICES = [
+    ("Consulting", "hrs", 150),
+    ("Development", "hrs", 120),
+    ("Design", "hrs", 95),
+    ("Maintenance", "hrs", 80),
+    ("Training", "sessions", 500),
 ]
 
 def get_hard_task():
     vendor = random.choice(VENDORS)
-    amount = random.choice(AMOUNTS)
     day = random.randint(1, 28)
     month = random.choice(MONTHS)
     ref = random.randint(1000, 9999)
 
-    signals = random.sample(FRAUD_SIGNALS, k=2)
+    service, unit, rate = random.choice(SERVICES)
+    quantity = random.randint(10, 50)
+    correct_amount = quantity * rate
+
+    # Inflate the amount — this IS the fraud
+    multiplier = random.choice([2, 3, 4])
+    fraudulent_amount = str(correct_amount * multiplier)
+
+    # Subtle fraud signals — no explicit "WARNING" labels
+    subtle_signals = [
+        f"Services: {service} ({quantity} {unit} @ ${rate}/{unit})",
+        f"Previous invoice #{ref - random.randint(1,5)} settled on {day - 1} {month} 2024",
+        f"Bank: Account ending {random.randint(1000, 9999)}",
+        f"Approved quote ref: QT-{random.randint(100,999)}",
+        f"Note: Rate updated per contract amendment {random.randint(1,9)}",
+        f"Authorised by: {random.choice(['J. Smith', 'A. Kumar', 'M. Chen'])}",
+    ]
+
+    selected = random.sample(subtle_signals, k=3)
 
     invoice_text = (
         f"INVOICE #{ref}\n"
         f"Vendor: {vendor}\n"
         f"Date: {day} {month} 2024\n"
-        f"Amount Due: ${amount}\n"
-        f"{signals[0]}\n"
-        f"{signals[1]}\n"
+        f"{selected[0]}\n"
+        f"Amount Due: ${fraudulent_amount}\n"
+        f"{selected[1]}\n"
+        f"{selected[2]}\n"
     )
+
     return {
         "invoice_text": invoice_text,
         "true_fields": {
-            "amount": amount,
+            "amount": fraudulent_amount,
             "vendor": vendor,
             "date": f"{day} {month}",
         },
