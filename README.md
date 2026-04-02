@@ -1,4 +1,14 @@
-﻿# Invoice Processing Environment
+﻿title: Invoice Processing Environment
+emoji: 📄
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+tags:
+  - openenv
+
+
+# Invoice Processing Environment
 
 An OpenEnv-compatible reinforcement learning environment where an AI agent reads invoices, extracts fields, validates them, and detects fraud.
 
