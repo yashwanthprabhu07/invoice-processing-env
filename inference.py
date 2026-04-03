@@ -44,26 +44,24 @@ No explanation. No markdown. Just the JSON."""
 
 
 def is_fraud(invoice_text):
-    prompt = f"""You are a fraud detection expert reviewing invoices.
+    prompt = f"""You are a fraud detection expert. You MUST check the math.
 
-The following invoice contains ONE OR MORE of these fraud signals:
-- "Duplicate" or "resubmitted"
-- "Urgent" payment request
-- "Different account" or bank details changed
-- "Vendor name does not match"
-- "Amount billed is 4x" or discrepancy note
-- "No supporting documents"
-- "Previous invoices already paid"
+Step 1: Find any line showing rate and quantity (e.g. "30 hrs @ $150/hr")
+Step 2: Calculate: quantity x rate = expected amount
+Step 3: Compare expected amount to "Amount Due"
+Step 4: If Amount Due is MORE than 1.5x the expected amount -> FRAUD
 
-Read this invoice carefully:
+Also check: duplicate invoice numbers, changed bank accounts.
+
+Invoice:
 {invoice_text}
 
-Does this invoice contain ANY fraud signal? Respond ONLY with true or false."""
+Is this invoice fraudulent? Respond ONLY with true or false."""
 
     response = client.chat.completions.create(
         model=MODEL_NAME,
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=10
+        max_tokens=50
     )
     return "true" in response.choices[0].message.content.strip().lower()
 
@@ -113,7 +111,7 @@ def run_episode(mode="easy"):
 
 
 def main():
-    print("=== Invoice Processing Environment — Baseline Inference ===\n")
+    print("=== Invoice Processing Environment - Baseline Inference ===\n")
     scores = {}
     for mode in ["easy", "medium", "hard"]:
         score = run_episode(mode=mode)
