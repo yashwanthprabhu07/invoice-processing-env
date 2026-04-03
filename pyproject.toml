@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "invoice-env"
+version = "1.0.0"
+description = "AI Invoice Processing OpenEnv Environment"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic>=2.0.0",
+    "openai",
+    "groq",
+    "openenv-core>=0.2.0"
+]
+
+[project.scripts]
+server = "server.app:main"
+
+[tool.openenv]
+entry_point = "env:InvoiceEnv"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
