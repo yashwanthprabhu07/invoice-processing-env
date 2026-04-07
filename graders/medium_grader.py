@@ -6,4 +6,5 @@ def grade_medium(state):
             correct += 1
     accuracy = correct / total
     penalty = 0.1 * len(state["validation_errors"])
-    return max(0.0, accuracy - penalty)
+    raw = max(0.0, accuracy - penalty)
+    return max(0.01, min(0.99, raw))
