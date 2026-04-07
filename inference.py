@@ -6,13 +6,12 @@ from models import Action
 
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.groq.com/openai/v1")
 MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.1-8b-instant")
-API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.groq.com/openai/v1")
-MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.1-8b-instant")
 HF_TOKEN = os.environ.get("HF_TOKEN")
+GROQ_API_KEY = "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"
 
 client = OpenAI(
     base_url=API_BASE_URL,
-    api_key=HF_TOKEN
+    api_key=HF_TOKEN or GROQ_API_KEY
 )
 
 
@@ -38,6 +37,7 @@ No explanation. No markdown. Just the JSON."""
     raw = response.choices[0].message.content.strip()
     raw = raw.replace("```json", "").replace("```", "").strip()
     fields = json.loads(raw)
+    fields = {k: str(v) for k, v in fields.items()}
     if "date" in fields:
         parts = fields["date"].split()
         if len(parts) >= 2:
@@ -72,15 +72,15 @@ def run_episode(mode="easy"):
     env = InvoiceEnv()
     obs = env.reset(mode=mode)
     total_reward = 0.0
+    step_count = 0
 
-    print(f"\n--- Mode: {mode} ---")
-    print(f"Invoice:\n{obs.invoice_text.strip()}\n")
+    print(f"[START] task={mode}", flush=True)
 
     try:
         fields = extract_fields(obs.invoice_text)
-        print(f"LLM extracted: {fields}")
     except Exception as e:
-        print(f"Extraction failed: {e}")
+        print(f"[ERROR] {e}", flush=True)
+        print(f"[END] task={mode} score=0.0 steps=0", flush=True)
         return 0.0
 
     for field_name, value in fields.items():
@@ -89,41 +89,36 @@ def run_episode(mode="easy"):
             field_name=field_name,
             value=value
         ))
-        print(f"  extract {field_name:10} = '{value}' -> reward: {reward:+.2f}")
+        step_count += 1
         total_reward += reward
+        print(f"[STEP] step={step_count} action=extract_{field_name} reward={round(reward, 2)}", flush=True)
 
     obs, reward, done, _ = env.step(Action(action_type="validate"))
-    print(f"  validate           -> reward: {reward:+.2f}")
+    step_count += 1
     total_reward += reward
+    print(f"[STEP] step={step_count} action=validate reward={round(reward, 2)}", flush=True)
 
     if mode == "hard":
         fraud = is_fraud(obs.invoice_text)
-        print(f"  fraud decision: {fraud}")
         if fraud:
             obs, reward, done, _ = env.step(Action(action_type="flag_fraud"))
-            print(f"  flag_fraud         -> reward: {reward:+.2f}")
+            step_count += 1
             total_reward += reward
+            print(f"[STEP] step={step_count} action=flag_fraud reward={round(reward, 2)}", flush=True)
 
     obs, reward, done, _ = env.step(Action(action_type="finish"))
-    print(f"  finish             -> reward: {reward:+.2f}")
+    step_count += 1
     total_reward += reward
+    print(f"[STEP] step={step_count} action=finish reward={round(reward, 2)}", flush=True)
 
-    print(f"Total reward: {total_reward:.2f}")
+    score = round(total_reward, 2)
+    print(f"[END] task={mode} score={score} steps={step_count}", flush=True)
     return total_reward
 
 
 def main():
-    print("START")
-    scores = {}
     for mode in ["easy", "medium", "hard"]:
-        print(f"STEP mode={mode}")
-        score = run_episode(mode=mode)
-        scores[mode] = score
-
-    print("\n=== Final Scores ===")
-    for mode, score in scores.items():
-        print(f"  {mode:10} -> {score:.2f}")
-    print("END")
+        run_episode(mode=mode)
 
 
 if __name__ == "__main__":
