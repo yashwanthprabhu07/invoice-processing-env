@@ -87,10 +87,10 @@ def run_episode(mode="easy"):
     except Exception as e:
         print(f"[ERROR] {e}", flush=True)
 
-        # ❗ NEVER return 0.0
-        epsilon = 1e-6
-        print(f"[END] task={mode} score={epsilon} steps=0", flush=True)
-        return epsilon
+        # Keep fallback strictly inside (0, 1) and avoid scientific notation.
+        fallback_score = 0.01
+        print(f"[END] task={mode} score={fallback_score:.4f} steps=0", flush=True)
+        return fallback_score
 
     # Extract fields
     for field_name, value in fields.items():
@@ -130,12 +130,12 @@ def run_episode(mode="easy"):
     max_possible = 2.6
     normalized = total_reward / max_possible
 
-    epsilon = 1e-6
+    epsilon = 0.01
     normalized = max(epsilon, min(1 - epsilon, normalized))
 
     normalized = min(0.9999, round(normalized, 4))
 
-    print(f"[END] task={mode} score={normalized} steps={step_count}", flush=True)
+    print(f"[END] task={mode} score={normalized:.4f} steps={step_count}", flush=True)
 
     return normalized
 
