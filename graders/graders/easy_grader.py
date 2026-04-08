@@ -1,3 +1,7 @@
+def _clamp_score(raw):
+    return float(max(0.1, min(0.9, float(raw))))
+
+
 def grade_easy(state):
     correct = 0
     total = 3
@@ -5,4 +9,4 @@ def grade_easy(state):
         if state["extracted_fields"].get(k) == v:
             correct += 1
     raw = correct / total
-    return max(0.01, min(0.99, raw))
+    return _clamp_score(raw)

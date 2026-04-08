@@ -45,7 +45,7 @@ print(reward, done)
 | `extract_field` | Extract amount, date, or vendor | +0.2 correct / -0.2 wrong |
 | `validate` | Check all extracted fields | +0.3 correct / -0.1 errors |
 | `flag_fraud` | Flag invoice as fraudulent | +0.5 correct / -0.5 wrong |
-| `finish` | Complete the episode | +1.0 + efficiency bonus / -0.3 wrong |
+| `finish` | Complete the episode | +0.99 + efficiency bonus / -0.3 wrong |
 
 ### Efficiency Bonus
 Finishing in fewer steps earns extra reward: `(max_steps - step_count) * 0.05`
@@ -115,7 +115,7 @@ Total reward: 2.60
 ```
 
 ## Reward Range
-`[-2, 2.6]`
+`[-2, 2.59]`
 
 ## Max Steps
 `10`

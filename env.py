@@ -106,7 +106,7 @@ class InvoiceEnv:
                 if v is not None
             ) and (not self.state_data["fraud"] or self.state_data["fraud_detected"]):
                 efficiency_bonus = round(max(0, (self.max_steps - self.state_data["step_count"]) * 0.05), 2)
-                reward += 1.0 + efficiency_bonus
+                reward += 0.99 + efficiency_bonus
                 self.state_data["done"] = True
             else:
                 reward -= 0.3

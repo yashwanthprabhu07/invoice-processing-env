@@ -1,3 +1,7 @@
+def _clamp_score(raw):
+    return float(max(0.1, min(0.9, float(raw))))
+
+
 def grade_easy(state):
     try:
         correct = 0
@@ -8,4 +12,4 @@ def grade_easy(state):
         raw = correct / total
     except Exception:
         raw = 0.5
-    return float(max(0.01, min(0.99, float(raw))))
+    return _clamp_score(raw)

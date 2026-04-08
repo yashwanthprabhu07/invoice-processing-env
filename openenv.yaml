@@ -21,6 +21,6 @@ action_space:
     field_name: string
     value: string
 
-reward_range: [-2, 2.6]
+reward_range: [-2, 2.59]
 
 max_steps: 10
