@@ -7,16 +7,13 @@ from models import Action
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.groq.com/openai/v1")
 MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.1-8b-instant")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-
-if not GROQ_API_KEY:
-    raise ValueError(
-        "Missing GROQ_API_KEY. Set GROQ_API_KEY to a valid Groq API key before running inference.py."
-    )
-
-client = OpenAI(base_url=API_BASE_URL, api_key=GROQ_API_KEY)
+client = OpenAI(base_url=API_BASE_URL, api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 
 def extract_fields(invoice_text):
+    if client is None:
+        raise RuntimeError("Missing GROQ_API_KEY")
+
     prompt = f"""You are an invoice processing assistant.
 Read the following invoice and extract these three fields:
 - amount: just the number, no $ or commas (e.g. "5000")
