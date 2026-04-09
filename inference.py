@@ -1,5 +1,6 @@
 import os
 import json
+import ast
 from openai import OpenAI
 from env import InvoiceEnv
 from models import Action
@@ -8,6 +9,37 @@ API_BASE_URL = os.environ.get("API_BASE_URL", "")
 API_KEY = os.environ.get("API_KEY", "")
 MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.1-8b-instant")
 client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY) if (API_BASE_URL and API_KEY) else None
+
+
+def _parse_fields_payload(raw_text):
+    cleaned = (raw_text or "").strip().replace("```json", "").replace("```", "").strip()
+    if not cleaned:
+        raise ValueError("Empty LLM response")
+
+    # Try strict JSON first, then fall back to object-slice JSON, then Python-literal dict.
+    candidates = [cleaned]
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        candidates.append(cleaned[start:end + 1])
+
+    for candidate in candidates:
+        try:
+            parsed = json.loads(candidate)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+
+    for candidate in candidates:
+        try:
+            parsed = ast.literal_eval(candidate)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+
+    raise ValueError("LLM output is not a valid JSON object")
 
 
 def extract_fields(invoice_text):
@@ -33,10 +65,8 @@ No explanation. No markdown. Just the JSON."""
         max_tokens=200
     )
 
-    raw = (response.choices[0].message.content or "").strip()
-    raw = raw.replace("```json", "").replace("```", "").strip()
-
-    fields = json.loads(raw)
+    raw = response.choices[0].message.content or ""
+    fields = _parse_fields_payload(raw)
     fields = {k: str(v) for k, v in fields.items()}
 
     if "date" in fields:

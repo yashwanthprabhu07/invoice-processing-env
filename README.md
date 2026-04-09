@@ -146,6 +146,25 @@ You can also create a local `.env` file with:
 GROQ_API_KEY=your_groq_api_key
 ```
 
+## Hackathon Inference Runner (LiteLLM Proxy)
+
+`inference.py` is configured for hackathon validation and must use the injected proxy variables.
+
+### Required environment variables
+```powershell
+$env:API_BASE_URL="https://your-litellm-proxy/v1"
+$env:API_KEY="your_proxy_api_key"
+```
+
+### Run inference
+```bash
+python inference.py
+```
+
+Notes:
+- Do not hardcode provider keys in `inference.py`.
+- If `API_BASE_URL` or `API_KEY` is missing, the script falls back safely instead of crashing.
+
 ### How it works
 1. Receives raw invoice text as observation
 2. Sends it to LLaMA 3.1 to extract amount, vendor, date
