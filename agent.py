@@ -1,9 +1,16 @@
+import os
 import json
 from groq import Groq
 from env import InvoiceEnv
 from models import Action
 
-GROQ_API_KEY = "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"
+MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.1-8b-instant")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+
+if not GROQ_API_KEY:
+    raise ValueError(
+        "Missing GROQ_API_KEY. Set GROQ_API_KEY to a valid Groq API key before running agent.py."
+    )
 
 client = Groq(api_key=GROQ_API_KEY)
 
@@ -23,11 +30,11 @@ Respond ONLY with a JSON object like this:
 No explanation. No markdown. Just the JSON."""
 
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model=MODEL_NAME,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=200
     )
-    raw = response.choices[0].message.content.strip()
+    raw = (response.choices[0].message.content or "").strip()
     raw = raw.replace("```json", "").replace("```", "").strip()
     fields = json.loads(raw)
     if "date" in fields:
@@ -48,11 +55,11 @@ Invoice:
 Respond ONLY with true or false."""
 
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model=MODEL_NAME,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=10
     )
-    raw = response.choices[0].message.content.strip().lower()
+    raw = (response.choices[0].message.content or "").strip().lower()
     return "true" in raw
 
 

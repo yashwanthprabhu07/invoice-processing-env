@@ -135,6 +135,17 @@ python agent.py
 
 A real AI-powered agent that reads raw invoice text and extracts fields using LLaMA 3.1 via Groq API — no peeking at answers.
 
+### Environment
+Set `GROQ_API_KEY` before running the LLM agent:
+```powershell
+$env:GROQ_API_KEY="your_groq_api_key"
+```
+
+You can also create a local `.env` file with:
+```env
+GROQ_API_KEY=your_groq_api_key
+```
+
 ### How it works
 1. Receives raw invoice text as observation
 2. Sends it to LLaMA 3.1 to extract amount, vendor, date

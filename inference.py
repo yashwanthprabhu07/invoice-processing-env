@@ -6,13 +6,14 @@ from models import Action
 
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.groq.com/openai/v1")
 MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.1-8b-instant")
-HF_TOKEN = os.environ.get("HF_TOKEN")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
-client = OpenAI(
-    base_url=API_BASE_URL,
-    api_key=HF_TOKEN or GROQ_API_KEY
-)
+if not GROQ_API_KEY:
+    raise ValueError(
+        "Missing GROQ_API_KEY. Set GROQ_API_KEY to a valid Groq API key before running inference.py."
+    )
+
+client = OpenAI(base_url=API_BASE_URL, api_key=GROQ_API_KEY)
 
 
 def extract_fields(invoice_text):
@@ -35,7 +36,7 @@ No explanation. No markdown. Just the JSON."""
         max_tokens=200
     )
 
-    raw = response.choices[0].message.content.strip()
+    raw = (response.choices[0].message.content or "").strip()
     raw = raw.replace("```json", "").replace("```", "").strip()
 
     fields = json.loads(raw)
@@ -70,7 +71,8 @@ Is this invoice fraudulent? Respond ONLY with true or false."""
         max_tokens=50
     )
 
-    return "true" in response.choices[0].message.content.strip().lower()
+    content = (response.choices[0].message.content or "").strip().lower()
+    return "true" in content
 
 
 def run_episode(mode="easy"):
