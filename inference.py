@@ -4,15 +4,15 @@ from openai import OpenAI
 from env import InvoiceEnv
 from models import Action
 
-API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.groq.com/openai/v1")
+API_BASE_URL = os.environ.get("API_BASE_URL", "")
+API_KEY = os.environ.get("API_KEY", "")
 MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.1-8b-instant")
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-client = OpenAI(base_url=API_BASE_URL, api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY) if (API_BASE_URL and API_KEY) else None
 
 
 def extract_fields(invoice_text):
     if client is None:
-        raise RuntimeError("Missing GROQ_API_KEY")
+        raise RuntimeError("Missing API_BASE_URL or API_KEY")
 
     prompt = f"""You are an invoice processing assistant.
 Read the following invoice and extract these three fields:
@@ -48,6 +48,9 @@ No explanation. No markdown. Just the JSON."""
 
 
 def is_fraud(invoice_text):
+    if client is None:
+        raise RuntimeError("Missing API_BASE_URL or API_KEY")
+
     prompt = f"""You are a fraud detection expert. You MUST check the math.
 
 Step 1: Find any line showing rate and quantity (e.g. "30 hrs @ $150/hr")
