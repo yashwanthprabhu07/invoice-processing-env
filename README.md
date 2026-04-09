@@ -24,6 +24,11 @@ uv sync
 python test_env.py
 ```
 
+Run inference regression tests:
+```bash
+python -m pytest -q test_inference.py
+```
+
 ## Quick Start
 ```python
 from env import InvoiceEnv
